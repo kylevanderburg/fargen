@@ -10,11 +10,11 @@ This code is a module that requires the Hammer Core in order to fully work.
 $hr = new vio_far_activity($hammer);
 $hr->restrict();
 
-include "far-standards.php";
+// include "far-standards.php";
 
 // $class = new vio_class($hammer);
 // $class->restrict();
-$hammer->debug();
+// $hammer->debug();
 echo "<div class=\"hh\"><h1>Hammer &raquo; Projects</h1></div>";
 $hr->toolbar();
 switch ($hammer->location[1]){
@@ -27,10 +27,11 @@ switch ($hammer->location[1]){
 
 		if(($hammer->location['action']==="insert") xor ($hammer->location['action']==="write")){
 			if(!isset($hr->id)){$hr->id=$_POST['id'];}
+			if(is_array($_POST['category'])){$_POST['category'] = implode(",",$_POST['category']);}
 			unset($_POST['options']);
 			$hr->update($_POST);
 		}
-
+		
 		if($hammer->location['action']=="modify"){$hr->id=$hammer->location['item'];}
 
 		if($hammer->location['action']=="insert"||$hammer->location['action']=="modify"||$hammer->location['action']=="write"){$hr->get();}
@@ -40,6 +41,7 @@ switch ($hammer->location[1]){
 		<?php } 
 		$hr->saveCloseHandler($_POST);
 		$hr->savedAlert($action);
+		// var_dump($hr->row);
 		?>
 		
 		<form name="<?php echo $hr->page; ?>" action="/<?php echo $hr->page;?>/<?php if($hammer->location['action']=="new"){echo "insert";}elseif(($hammer->location['action']=="modify")||($hammer->location['action']=="insert")||($hammer->location['action']=="write")){echo "write";} ?>/" method="post" enctype="multipart/form-data" autocomplete="off">
@@ -60,16 +62,18 @@ switch ($hammer->location[1]){
 						<tr><td><?php $hr->textinput("name","Name");?></td></tr>
 						<tr><td>
 							<div class="form-group form-group-lg">
-								<label for="<?php echo $hr->page;?>-cat">Category</label>
-								<input type="hidden" name="cat" value="" />
-								<select id="<?php echo $hr->page;?>-cat" name="cat[]" class="form-control lz-field" multiple>
-								<?php foreach($categories as $c)
+								<label for="<?php echo $hr->page;?>-category">Category</label>
+								<input type="hidden" name="category" value="" />
+								<select id="<?php echo $hr->page;?>-category" name="category[]" class="form-control lz-field" multiple>
+								<?php 
+									$cats = explode(',',$hr->row['category']);
+									foreach($hr->categories as $c)
 									{
 										echo "<optgroup label=\"".$c['name']."\">";
-										foreach($items as $i){
+										foreach($hr->items as $i){
 											switch ($i['category']){
 												case $c['name']:
-													echo "<option value='" . $i['code'] . "'";/*if ($i['code']==$hr->row['code']){echo " selected";}*/echo ">".$c['name']." - ".$i['name'] . "</option>";
+													echo "<option value='" . $i['code'] . "'";if (in_array($i['code'], $cats) !== FALSE){echo " selected";} echo ">".$c['name']." - ".$i['name'] . "</option>";
 												break;
 											}
 										}
@@ -117,9 +121,9 @@ switch ($hammer->location[1]){
 		<input type="hidden" name="id" value="<?php echo $hr->id; ?>">
 		<div class="text-center">
 		<div class="btn-group btn-group-lg">
-			<?php //echo $hr->saveButton(); 
-			// echo $hr->saveCloseButton();
-			// echo $hr->deleteButton($hr->row['id'],$hr->row['title']); ?>
+			<?php echo $hr->saveButton(); 
+			echo $hr->saveCloseButton();
+			echo $hr->deleteButton($hr->row['id'],$hr->row['name']); ?>
 		</div>
 		</div>
 		</form>
